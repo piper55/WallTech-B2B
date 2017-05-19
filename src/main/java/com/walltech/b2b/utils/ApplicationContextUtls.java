@@ -11,7 +11,10 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class ApplicationContextUtls implements ApplicationContextAware  {
     private  ApplicationContext applicationContext = new ClassPathXmlApplicationContext("spring.xml");
 
-    public ApplicationContext getApplicationContext() {
+    private ApplicationContextUtls() {
+    }
+
+    public  ApplicationContext getApplicationContext() {
         return applicationContext;
     }
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
