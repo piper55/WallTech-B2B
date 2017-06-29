@@ -8,10 +8,10 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * Created by zedd on 2017/5/12.
  */
-public class ApplicationContextUtls implements ApplicationContextAware  {
+public class ApplicationContextUtils implements ApplicationContextAware  {
     private  ApplicationContext applicationContext = new ClassPathXmlApplicationContext("spring.xml");
 
-    private ApplicationContextUtls() {
+    private ApplicationContextUtils() {
     }
 
     public  ApplicationContext getApplicationContext() {
