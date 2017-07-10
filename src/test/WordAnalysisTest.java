@@ -1,3 +1,8 @@
+import com.walltech.b2b.entrance.FileAnalysisEntrance;
+import com.walltech.b2b.enumeration.FileType;
+import com.walltech.b2b.service.FileAnalysisFactory;
+import com.walltech.b2b.service.GetFileContentFactory;
+import com.walltech.b2b.service.GetWordContentImpl;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.converter.PicturesManager;
 import org.apache.poi.hwpf.converter.WordToHtmlConverter;
@@ -9,6 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Segment;
+import javax.swing.text.rtf.RTFEditorKit;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -25,13 +34,33 @@ import java.util.List;
  */
 public class WordAnalysisTest {
     private static final Logger logger = LoggerFactory.getLogger(FileAnalysisTest.class);
-    private static final StringBuffer baseAddress = new StringBuffer("C:/Users/zeddwang/Desktop/FileAnalysiDemo/");
+    private static final StringBuffer baseAddress = new StringBuffer("C:/Users/zeddwang/Desktop/new_demo/");
     public static void main(String[] args) {
         try {
-            File file  = new File(baseAddress.append("WORD 系统导出格式2003格式.doc").toString());
+            File file  = new File(baseAddress.append("apia托书 11月3日.rtf").toString());
+            //FileInputStream is = new FileInputStream(new File(baseAddress.toString()));
             FileInputStream inputStream = new FileInputStream(file);
-            POIFSFileSystem poifsFileSystem = new POIFSFileSystem(inputStream);
-            HWPFDocument document = new HWPFDocument(poifsFileSystem);
+//            byte[] bytes = new byte[5];
+//            is.read(bytes, 0, bytes.length);
+//            StringBuffer header=new StringBuffer();
+//            for (byte b : bytes) {
+//                String hex=Integer.toHexString(b);
+//                if(hex.length()<2){// 两位以下补〇
+//                    header.append('0');
+//                }
+//                header.append(hex);
+//            }
+//            boolean isRTF="7b5c727466".contentEquals(header);
+//            is.close();
+//            if (!isRTF){
+//                getAnalysis2(inputStream);
+//            }else{
+//                getAnalysis3(inputStream);
+//            }
+            /** 工厂方法 **/
+            System.out.println(FileAnalysisEntrance.beginParsing(inputStream, FileType.RTF));
+            //POIFSFileSystem poifsFileSystem = new POIFSFileSystem(inputStream);
+            //HWPFDocument document = new HWPFDocument(poifsFileSystem);
             /** 读文本 **/
 //            String text = document.getDocumentText();
 //            System.out.println(text);
@@ -60,12 +89,55 @@ public class WordAnalysisTest {
 //                }
 //            }
             /** 转html -> pdd => analysis **/
-            convert2Html(inputStream, "C:/Users/zeddwang/Desktop/FileAnalysiDemo/a.html");
+            //convert2Html(inputStream, "C:/Users/zeddwang/Desktop/FileAnalysiDemo/a.html");
+            //document.close();
+            //getAnalysis1(inputStream);
+            //getAnalysis3(inputStream);
             inputStream.close();
         } catch (Exception ex){
             logger.error(ex.getMessage());
         }
     }
+    private static String getAnalysis1(FileInputStream inputStream) throws IOException {
+        HWPFDocument document = new HWPFDocument(inputStream);
+        String text = document.getDocumentText();
+        System.out.println(text);
+        document.close();
+        return text;
+    }
+    private static String getAnalysis2(FileInputStream inputStream) throws IOException{
+        HWPFDocument document = new HWPFDocument(inputStream);
+        Range range = document.getRange();
+        TableIterator iterator = new TableIterator(range);
+        while (iterator.hasNext()){
+            Table tb = iterator.next();
+            for (int i = 0; i < tb.numRows(); i++) {
+                TableRow tr = tb.getRow(i);
+                //迭代列，默认从0开始
+                for (int j = 0; j < tr.numCells(); j++) {
+                    TableCell td = tr.getCell(j);
+                    for (int k = 0; k < td.numParagraphs(); k++) {
+                        Paragraph para = td.getParagraph(k);
+                        String s = para.text();
+                        System.out.println(s);
+                    }
+                }
+            }
+        }
+        document.close();
+        return "";
+    }
+
+    private static String getAnalysis3(FileInputStream inputStream) throws IOException, BadLocationException {
+        RTFEditorKit rtfEditorKit = new RTFEditorKit();
+        DefaultStyledDocument document  = new DefaultStyledDocument();
+        rtfEditorKit.read(inputStream, document, 0);
+        String text = new String(document.getText(0,document.getLength()).getBytes("ISO-8859-1"),"GB2312");
+        System.out.println(text);
+        return "";
+    }
+
+
     /** 转换测试 **/
 
     public static void convert2Html(FileInputStream inputStream, String outPutFile)
